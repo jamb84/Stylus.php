@@ -1,5 +1,5 @@
 {
-    "name": "kylekatarnls/stylus-stable",
+    "name": "kylekatarnls/stylus",
     "description": "Stylus preprocessor for PHP (see https://github.com/AustP/Stylus.php, it's an exact fork except the minimum stability)",
 
     "authors": [
