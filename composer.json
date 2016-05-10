@@ -1,6 +1,6 @@
 {
-    "name": "neemzy/stylus",
-    "description": "Stylus preprocessor for PHP",
+    "name": "kylekatarnls/stylus",
+    "description": "Stylus preprocessor for PHP (see https://github.com/AustP/Stylus.php, it's an exact fork except the minimum stability)",
 
     "authors": [
         {
@@ -20,7 +20,5 @@
         "psr-0": {
             "Stylus": "src/"
         }
-    },
-
-    "minimum-stability": "dev"
+    }
 }
