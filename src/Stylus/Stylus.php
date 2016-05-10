@@ -94,7 +94,14 @@ class Stylus {
     protected function isBlockDeclaration($lines, $i, $indent = '') {
         $line = $lines[$i];
 
-        return ((preg_match('~^[a-zA-Z0-9.#*][^(]+((?<=:not)|$)~', $line)) || (preg_match('~^'.$indent.'[a-zA-Z0-9.#*+&\[\]=\'">\~\^\$\-]+,?$~', $line)) || (preg_match('~^'.$indent.'[a-zA-Z0-9.#*+&\[\]=\'">\~\^\$\- ,]+,$~', $line)) || (preg_match('~^'.$indent.'&~', $line)) || (isset($lines[$i+1]) && $this->getIndent($lines[$i+1]) > $this->getIndent($line)) || (preg_match('~{~', $line)));
+        return (
+            preg_match('~^[a-zA-Z0-9.#*][^(]+((?<=:not)|$)~', $line) ||
+            preg_match('~^'.$indent.'[a-zA-Z0-9.#*+&\[\]=\'">\~\^\$\-]+,?$~', $line) ||
+            preg_match('~^'.$indent.'[a-zA-Z0-9.#*+&\[\]=\'">\~\^\$\- ,]+,$~', $line) ||
+            preg_match('~^'.$indent.'&~', $line) ||
+            (isset($lines[$i+1]) && $this->getIndent($lines[$i+1]) > $this->getIndent($line)) ||
+            preg_match('~{~', $line)
+        );
     }
 
     /*
@@ -123,7 +130,14 @@ class Stylus {
      * isImport - sees if the line is importing a file
      */
     protected function isImport($line) {
-        return preg_match('~^@import~', $line);
+        return strpos($line, '@import') === 0;
+    }
+
+    /*
+     * isAtRule - sees if the line is an at-rule
+     */
+    protected function isAtRule($line) {
+        return strpos($line, '@') === 0;
     }
 
     /*
@@ -179,11 +193,11 @@ class Stylus {
 
             $i && $output .= PHP_EOL."\t";
 
-            if ($parent_args) {
-                $output .= preg_replace('~^([^: ]+):? ([^;]+);?$~', '$1: $2;', preg_replace('~arguments~', $parent_args, $line));
-            } else {
-                $output .= preg_replace('~^([^: ]+):? ([^;]+);?$~', '$1: $2;', preg_replace('~arguments~', $arguments, $line));
-            }
+            $output .= preg_replace(
+                '~^([^: ]+):? ([^;]+);?$~',
+                '$1: $2;',
+                preg_replace('~arguments~', $parent_args ? $parent_args : $arguments, $line)
+            );
         }
         return $output;
     }
@@ -197,6 +211,7 @@ class Stylus {
         $args = $matches[2];
         if (isset($this->functions[$name])) {
             $args = str_replace(array('(', ')'), '', $args);
+
             return $this->call($name, $args);
         } else {
             $args = $this->insertVariables($args);
@@ -310,27 +325,46 @@ class Stylus {
     }
 
     /*
+     * at-rule
+     */
+    protected function atRule(&$lines, &$i) {
+        $this->file .= $lines[$i].' {'.PHP_EOL;
+        $code = '';
+        while (isset($lines[$i + 1]) && preg_match('~^\s~', $lines[$i + 1])) {
+            $code .= $lines[$i + 1] . "\n";
+            $i++;
+        }
+        $stylus = new self();
+
+        $stylus->setReadDir($this->read_dir);
+        $this->file .= preg_replace('~\r\n|\r|\n~', "$0\t", "\t".trim($stylus->fromString($code)->toString()));
+        $this->file .= PHP_EOL.'}'.PHP_EOL;
+    }
+
+    /*
      * convertBlocksToCSS - converts blocks of CSS to actual CSS
      */
     protected function convertBlocksToCSS() {
-        foreach ($this->blocks as $block) {
-            if (! isset($block['contents']) || ! $block['contents']) {
-                continue;
+        if (is_array($this->blocks)) {
+            foreach ($this->blocks as $block) {
+                if (! isset($block['contents']) || ! $block['contents']) {
+                    continue;
+                }
+
+                foreach ($block['names'] as $i => $name) {
+                    $i && $this->file .= ', ';
+                    $this->file .= $name;
+                }
+
+                $this->file .= ' {'.PHP_EOL;
+
+                foreach ($block['contents'] as $i => $content) {
+                    $i && $this->file .= PHP_EOL;
+                    $this->file .= "\t".$content;
+                }
+
+                $this->file .= PHP_EOL.'}'.PHP_EOL;
             }
-
-            foreach ($block['names'] as $i => $name) {
-                $i && $this->file .= ', ';
-                $this->file .= $name;
-            }
-
-            $this->file .= ' {'.PHP_EOL;
-
-            foreach ($block['contents'] as $i => $content) {
-                $i && $this->file .= PHP_EOL;
-                $this->file .= "\t".$content;
-            }
-
-            $this->file .= PHP_EOL.'}'.PHP_EOL;
         }
     }
 
@@ -354,17 +388,19 @@ class Stylus {
         $input = $this->readInput();
         $lines = array_values(array_filter(preg_replace('~^\s*}\s*$~', '', preg_split('~\r\n|\n|\r~', $input)), 'strlen'));
 
-        for ($i=0; $i<count($lines); $i++) {
+        for ($i = 0; $i < count($lines); $i++) {
             $line = $lines[$i];
 
             if ($this->isFunctionDeclaration($line)) {
                 $this->addFunction($lines, $i);
             } else if ($this->isVariableDeclaration($lines, $i)) {
                 $this->addVariable($line);
-            } else if ($this->isBlockDeclaration($lines, $i)) {
-                $this->addBlock($lines, $i);
             } else if ($this->isImport($line)) {
                 $this->import($lines, $i);
+            } else if ($this->isAtRule($line)) {
+                $this->atRule($lines, $i);
+            } else if ($this->isBlockDeclaration($lines, $i)) {
+                $this->addBlock($lines, $i);
             }
         }
 
