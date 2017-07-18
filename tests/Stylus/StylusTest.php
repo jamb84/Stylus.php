@@ -65,7 +65,7 @@ class StylusTest extends \PHPUnit_Framework_TestCase {
         $stylus->setReadDir('tests/data');
 
         $in = 'test.styl';
-        $out = $stylus->fromFile($in)->toString();
+        $out = str_replace("\r", '', $stylus->fromFile($in)->toString());
 
         $correct = file_get_contents('tests/data/test.css');
 
@@ -80,7 +80,7 @@ class StylusTest extends \PHPUnit_Framework_TestCase {
         $stylus->setReadDir('tests/data');
 
         $in = 'animations.styl';
-        $out = $stylus->fromFile($in)->toString();
+        $out = str_replace("\r", '', $stylus->fromFile($in)->toString());
 
         $correct = file_get_contents('tests/data/animations.css');
 

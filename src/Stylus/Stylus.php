@@ -289,7 +289,7 @@ class Stylus {
      * addVariable - adds user defined variable
      */
     protected function addVariable($line) {
-        preg_match('~^([\$a-zA-Z0-9_-]+)\s*=\s*([^;]+);?$~', $line, $matches);
+        preg_match('~^([\$a-zA-Z0-9_-]+)\s*=\s*(.*[^;]);*$~', $line, $matches);
         $name = $matches[1];
         $value = preg_replace('~(^[^=]+=\s*)|;~', '', $this->parseLine($line));
         $this->assign($name, $value);
