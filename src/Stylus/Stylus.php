@@ -17,6 +17,7 @@
 
 namespace Stylus;
 
+use Countable;
 use Stylus\Exception as StylusException;
 
 class Stylus {
@@ -224,7 +225,9 @@ class Stylus {
      * addBlock - adds block of css code
      */
     protected function addBlock($lines, &$i, $indent = '', $parent_names = array()) {
-        $position = count($this->blocks);
+        $position = $this->blocks && (is_array($this->blocks) || $this->blocks instanceof Countable)
+            ? count($this->blocks)
+            : 0;
         $this->blocks[$position] = 'placeholder';
         $block = array('names'=>array(), 'contents'=>array());
 
