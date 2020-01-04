@@ -2,6 +2,8 @@
     "name": "kylekatarnls/stylus",
     "description": "Stylus preprocessor for PHP (see https://github.com/AustP/Stylus.php, it's an exact fork except the minimum stability)",
 
+    "license": "MIT",
+
     "authors": [
         {
             "name": "AustP"
@@ -9,6 +11,9 @@
         {
             "name": "neemzy",
             "email": "tom.panier@beseen.fr"
+        },
+        {
+            "name": "kylekatarnls"
         }
     ],
 
