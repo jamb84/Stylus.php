@@ -30,8 +30,6 @@
     },
 
     "autoload": {
-        "psr-0": {
-            "Stylus": "src/"
-        }
+        "psr-4": { "Stylus\\": "src/Stylus" }
     }
 }
