@@ -1,5 +1,5 @@
 {
-    "name": "kylekatarnls/stylus",
+    "name": "jamb84/stylus",
     "description": "Stylus preprocessor for PHP (see https://github.com/AustP/Stylus.php, it's an exact fork except the minimum stability)",
 
     "license": "MIT",
@@ -30,6 +30,6 @@
     },
 
     "autoload": {
-        "psr-4": { "Stylus\\": "src/Stylus" }
+        "psr-0": { "Stylus": "src" }
     }
 }
