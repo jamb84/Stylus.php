@@ -57,7 +57,7 @@ class Stylus {
      * setImportDir - sets the directory to import from
      */
     public function setImportDir($dir) {
-        if (is_dir($dir)) {
+        if (is_dir($dir) || is_array($dir)) {
             $this->import_dir = $dir;
         } else {
             throw new StylusException($dir.' is not a directory.');
@@ -310,9 +310,17 @@ class Stylus {
         }
 
         $dir = $this->import_dir ? $this->import_dir : $this->read_dir;
-        $path = $dir . '/' . $name . $extension;
+        if (is_array($dir)) {
+            foreach ($dir as $d) {
+                if (file_exists($d . '/' . $name . $extension)) {
+                    $path = $dir . '/' . $name . $extension;
+                }
+            }
+        } else {
+            $path = $dir . '/' . $name . $extension;
+        }
         $contents = file_get_contents($path);
-
+        
         if ($contents === false) {
             StylusException::report('Could not read ' . $path);
         }
